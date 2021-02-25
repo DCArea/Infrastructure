@@ -3,3 +3,4 @@ node_modules/
 
 Pulumi.*.yaml
 .env.ps1
+azure.json

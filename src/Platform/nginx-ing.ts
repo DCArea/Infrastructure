@@ -5,7 +5,11 @@ const ingress_nginx = new k8s.helm.v3.Chart("ingress-nginx", {
     chart: "ingress-nginx",
     namespace: "kube-system",
     values: {
-        controller: { replicaCount: 1 }
+        controller: {
+            replicaCount: 1,
+            admissionWebhooks: { enabled: false },
+            service: { annotations: { "external-dns.alpha.kubernetes.io/hostname": "nginx.doomed.app." } }
+        },
     }
 });
 
