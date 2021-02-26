@@ -1,13 +1,13 @@
 import * as k8s from "@pulumi/kubernetes";
 import * as kx from "@pulumi/kubernetesx";
+import * as pulumi from "@pulumi/pulumi";
 import * as fs from 'fs';
+const config = new pulumi.Config();
 
-export function create_external_dns() {
-
-
+function create_external_dns() {
     const name_default = "external-dns";
     const namespace = new k8s.core.v1.Namespace(name_default, { metadata: { name: name_default } });
-    const azurejson = fs.readFileSync("azure.json", { encoding: "utf-8" });
+    const azurejson = config.requireSecret("azurejson");
 
     const secret = new kx.Secret("azure-config-file", {
         metadata: {
@@ -84,3 +84,5 @@ export function create_external_dns() {
         })
     });
 }
+
+create_external_dns()

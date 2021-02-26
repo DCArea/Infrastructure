@@ -6,18 +6,20 @@ const config = new pulumi.Config();
 export function setupAppStack(name: string) {
     const namespace = new k8s.core.v1.Namespace(name, { metadata: { name: name } });
     const serviceAccount = createNamespaceAdminServiceAccount(name);
-    return getKubeconfigOutput(serviceAccount, name);
+    return serviceAccount;
 }
 
-function getKubeconfigOutput(sa: k8s.core.v1.ServiceAccount, ns: string): pulumi.Output<string> {
+export function getKubeconfig(sa: k8s.core.v1.ServiceAccount, name: string): pulumi.Output<string> {
     const sa_secret = sa.secrets[0];
-    const server_url = config.require("kubernetes_server_url");
-    return sa_secret.apply(v => k8s.core.v1.Secret.get(v.name, `${ns}/${v.name}`).data)
-        .apply(v => _getKubeconfig(server_url, v["ca.crt"], Buffer.from(v["token"], "base64").toString()));
+    const server_url = config.requireSecret("kubernetes_server_url");
+    const secret_data = sa_secret.apply(v => k8s.core.v1.Secret.get(v.name, `${name}/${v.name}`).data);
+    const ca_data = secret_data["ca.crt"];
+    const token_data = secret_data["token"].apply(v => Buffer.from(v, "base64").toString());
+    return _getKubeconfig(server_url, ca_data, token_data);
 }
 
-function _getKubeconfig(server_url: string, crt_data: string, token: string): string {
-    const kubeconfig_content = `
+function _getKubeconfig(server_url: pulumi.Output<string>, crt_data: pulumi.Output<string>, token: pulumi.Output<string>): pulumi.Output<string> {
+    const kubeconfig_content = pulumi.interpolate `
 apiVersion: v1
 clusters:
 - cluster:
