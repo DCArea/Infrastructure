@@ -1,0 +1,3 @@
+config:
+  dca-platform:kubernetes_server_url:
+    secure: AAABADTID5ifAsgiyf53HvfJdbL/Sy1N6rVpDZGM2bhK0PcMJW1udf2kNLofl/7v/5ORVTtUF8i8fInvyWvR/UWdDS7DW+ewb4kNDqEB3ozpn1xxphTc8g0=
